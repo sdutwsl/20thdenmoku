@@ -53,10 +53,13 @@ def getBookList(dist_list_url):
             if bc.has_attr('class') and bc["class"][0] == "styles_main__veBBl":
                 info = bc.contents[1]
                 book["name"] = info.contents[0].string
-                book["author"] = info.contents[2].contents[0].string
+                if len(info.contents) >= 3:
+                    if (len(info.contents[2].contents) >= 1):
+                        book["author"] = info.contents[2].contents[0].string
             elif bc.has_attr('class') and bc["class"][0] == "styles_description__xIoZP":
                 book["description"] = bc.string
-        book_list.append(book)
+        if "name" in book:
+            book_list.append(book)
     return book_list
 
 
@@ -65,7 +68,7 @@ if __name__ == "__main__":
     l = 0
     for c in catas:
         c["sub_cata"] = getSubCatas(
-            dist_url+"/books/"+c["cata_name"].replace(" ", "-").replace("&", "and"))
+            dist_url+"/books/"+c["cata_name"].replace(" / ", "-").replace(" ", "-").replace("&", "and"))
         for d in c["sub_cata"]:
             time.sleep(0.5)
             d["book_list"] = getBookList(dist_url+d["link"])
