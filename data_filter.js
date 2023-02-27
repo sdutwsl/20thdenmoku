@@ -4,10 +4,9 @@ const catas = JSON.parse(fs.readFileSync("./books.json"));
 
 catas.forEach((cata) => {
   cata["sub_cata"].forEach((sub_cata) => {
-    sub_cata["book_list"] = sub_cata["book_list"].filter((b) => {
-      if (!b["description"]) return false;
-      return true;
-    });
+    sub_cata["book_list"] = sub_cata["book_list"].filter(
+      (b) => b["description"]
+    );
   });
 });
 
