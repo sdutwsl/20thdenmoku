@@ -1,3 +1,4 @@
+import re
 import requests
 from bs4 import BeautifulSoup
 import time
@@ -51,11 +52,26 @@ def getBookList(dist_list_url):
         book = {}
         for bc in bt.children:
             if bc.has_attr('class') and bc["class"][0] == "styles_main__veBBl":
+                book["cover_img"] = bc.contents[0].contents[0].contents[0]["src"]
                 info = bc.contents[1]
-                book["name"] = info.contents[0].string
-                if len(info.contents) >= 3:
-                    if (len(info.contents[2].contents) >= 1):
-                        book["author"] = info.contents[2].contents[0].string
+                for i in info.children:
+                    if i.has_attr('class') and i["class"][0] == "styles_title__iBHij":
+                        book["name"] = i.string
+                    if i.has_attr('class') and i["class"][0] == "styles_subtitle__n3_VN":
+                        book["subtitle"] = i.string
+                    if i.has_attr('class') and i["class"][0] == "styles_authorAndPublishDate__1_ZAf":
+                        aap = i.get_text()
+                        if aap:
+                            au = re.findall("(.+?) -", aap)
+                            book["author"] = au[0] if len(au) else None
+                            pd = re.findall(
+                                "(\d{4}-\d{1,2}-\d{1,2})", aap)
+                            book["publish_date"] = pd[0] if len(pd) else None
+                    if i.has_attr('class') and i["class"][0] == "styles_container__9a5bS":
+                        rt = i.get_text()
+                        if rt:
+                            rtt = re.findall("[0-9]\.[0-9]", rt)
+                            book["rate"] = rtt[0] if len(rtt) else None
             elif bc.has_attr('class') and bc["class"][0] == "styles_description__xIoZP":
                 book["description"] = bc.string
         if "name" in book:
@@ -73,8 +89,10 @@ if __name__ == "__main__":
             time.sleep(0.5)
             d["book_list"] = getBookList(dist_url+d["link"])
             print("finished subcata: "+d["cata_name"])
+            # break
         l += len(c["sub_cata"])
         print("****finished cata: "+c["cata_name"]+"****")
+        # break
     with open("books.json", "w") as bf:
         json.dump(catas, bf)
     print("all finished")
